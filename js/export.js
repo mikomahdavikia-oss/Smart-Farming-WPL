@@ -1,10 +1,3 @@
-/**
- * ================================================
- * EXPORT TO EXCEL JAVASCRIPT
- * ================================================
- * Menggunakan SheetJS (xlsx) untuk export data
- */
-
 // Export Data to Excel
 function exportToExcel() {
     // Check if data available
