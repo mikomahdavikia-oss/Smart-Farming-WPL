@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Smart Farming Cabai Rawit</title>
+    <link rel="icon" type="image/png" href="Elektro.png">
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/dashboard.css">
+</head>
+<body>
+    <!-- Particles Background -->
+    <div class="particles" id="particles"></div>
+
+    <!-- Dashboard Container -->
+    <div class="dashboard-container">
+        <!-- Navbar -->
+        <nav class="navbar-custom">
+            <div class="navbar-brand">
+                <h4 class="mb-0">
+                    <i class="fas fa-pepper-hot me-2"></i>Smart Farming Dashboard
+                </h4>
+                <p class="mb-0 text-muted small">Real-time Monitoring & Control System</p>
+            </div>
+            <div class="navbar-actions">
+                <span class="me-3" id="currentTime">--:--:--</span>
+                <button class="btn btn-logout" onclick="logout()">
+                    <i class="fas fa-sign-out-alt me-2"></i>Logout
+                </button>
+            </div>
+        </nav>
+
+        <!-- Sensor Cards -->
+        <div class="row">
+            <div class="col-md-4 mb-4">
+                <div class="card-custom sensor-card">
+                    <div class="sensor-icon temp-icon">
+                        <i class="fas fa-temperature-high"></i>
+                    </div>
+                    <h5>Suhu</h5>
+                    <div class="sensor-value" id="tempValue">--°C</div>
+                    <p class="text-muted mb-2">DHT22 Sensor</p>
+                    <div class="progress" style="height: 10px; border-radius: 10px;">
+                        <div class="progress-bar bg-gradient" id="tempProgress" role="progressbar" style="width: 0%"></div>
+                    </div>
+                    <small class="text-muted">Setpoint: 30-33°C</small>
+                </div>
+            </div>
+            
+            <div class="col-md-4 mb-4">
+                <div class="card-custom sensor-card">
+                    <div class="sensor-icon humidity-icon">
+                        <i class="fas fa-tint"></i>
+                    </div>
+                    <h5>Kelembaban</h5>
+                    <div class="sensor-value" id="humidityValue">--%</div>
+                    <p class="text-muted mb-2">DHT22 Sensor</p>
+                    <div class="progress" style="height: 10px; border-radius: 10px;">
+                        <div class="progress-bar bg-info" id="humidityProgress" role="progressbar" style="width: 0%"></div>
+                    </div>
+                    <small class="text-muted">Setpoint: 45-55%</small>
+                </div>
+            </div>
+
+            <div class="col-md-4 mb-4">
+                <div class="card-custom sensor-card">
+                    <div class="sensor-icon light-icon">
+                        <i class="fas fa-sun"></i>
+                    </div>
+                    <h5>Intensitas Cahaya</h5>
+                    <div class="sensor-value" id="lightValue">-- Lux</div>
+                    <p class="text-muted mb-2">LDR Sensor</p>
+                    <div class="progress" style="height: 10px; border-radius: 10px;">
+                        <div class="progress-bar bg-gradient-light" id="lightProgress" role="progressbar" style="width: 0%"></div>
+                    </div>
+                    <small class="text-muted">Setpoint: 1200-1500 Lux</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Control Mode Card -->
+        <div class="row">
+            <div class="col-md-12 mb-4">
+                <div class="card-custom">
+                    <h5 class="mb-4">
+                        <i class="fas fa-sliders-h me-2"></i>Mode Kontrol Sistem
+                    </h5>
+                    <div class="text-center">
+                        <div class="switch-container">
+                            <span id="modeLabel" class="mode-label">Manual</span>
+                            <label class="switch">
+                                <input type="checkbox" id="modeSwitch" onchange="toggleMode()">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        <span class="badge badge-manual mt-2" id="modeBadge">Manual Mode</span>
+                        <p class="text-muted small mt-2">Auto mode: Sistem otomatis mengontrol berdasarkan setpoint</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Actuator Control Cards -->
+        <div class="row">
+            <!-- POMPA AIR -->
+            <div class="col-md-4 mb-4">
+                <div class="card-custom">
+                    <h5 class="mb-3">
+                        <i class="fas fa-water me-2" style="color: #17a2b8;"></i>Pompa Air
+                    </h5>
+                    <div class="text-center">
+                        <!-- Switch -->
+                        <div class="switch-container mb-3">
+                            <span>OFF</span>
+                            <label class="switch">
+                                <input type="checkbox" id="pumpSwitch" onchange="togglePump()">
+                                <span class="slider"></span>
+                            </label>
+                            <span>ON</span>
+                        </div>
+                        
+                        <!-- Indicator -->
+                        <div class="led-indicator" id="pumpIndicator"></div>
+                        <p class="mt-2 mb-0 fw-bold" id="pumpStatus">OFF</p>
+                        <p class="text-muted small mt-1">Kontrol penyiraman otomatis</p>
+                        
+                        <!-- Info -->
+                        <div class="alert alert-info mt-3 py-2" style="font-size: 12px;">
+                            <strong>Auto:</strong> ON jika Suhu ≥ 33°C<br>
+                            OFF jika Suhu ≤ 30°C
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MISTING SYSTEM -->
+            <div class="col-md-4 mb-4">
+                <div class="card-custom">
+                    <h5 class="mb-3">
+                        <i class="fas fa-cloud me-2" style="color: #6c757d;"></i>Misting System
+                    </h5>
+                    <div class="text-center">
+                        <!-- Switch -->
+                        <div class="switch-container mb-3">
+                            <span>OFF</span>
+                            <label class="switch">
+                                <input type="checkbox" id="mistingSwitch" onchange="toggleMisting()">
+                                <span class="slider"></span>
+                            </label>
+                            <span>ON</span>
+                        </div>
+                        
+                        <!-- Indicator -->
+                        <div class="led-indicator" id="mistingIndicator"></div>
+                        <p class="mt-2 mb-0 fw-bold" id="mistingStatus">OFF</p>
+                        <p class="text-muted small mt-1">Kontrol kelembaban udara</p>
+                        
+                        <!-- Info -->
+                        <div class="alert alert-info mt-3 py-2" style="font-size: 12px;">
+                            <strong>Auto:</strong> ON jika Kelembaban ≤ 45%<br>
+                            OFF jika Kelembaban ≥ 55%
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SHADING SYSTEM -->
+            <div class="col-md-4 mb-4">
+                <div class="card-custom">
+                    <h5 class="mb-3">
+                        <i class="fas fa-umbrella me-2" style="color: #ffc107;"></i>Shading System
+                    </h5>
+                    <div class="text-center">
+                        <!-- Switch -->
+                        <div class="switch-container mb-3">
+                            <span>OFF</span>
+                            <label class="switch">
+                                <input type="checkbox" id="shadingSwitch" onchange="toggleShading()">
+                                <span class="slider"></span>
+                            </label>
+                            <span>ON</span>
+                        </div>
+                        
+                        <!-- Indicator -->
+                        <div class="led-indicator" id="shadingIndicator"></div>
+                        <p class="mt-2 mb-0 fw-bold" id="shadingStatus">OFF</p>
+                        <p class="text-muted small mt-1">Kontrol naungan otomatis</p>
+                        
+                        <!-- Info -->
+                        <div class="alert alert-info mt-3 py-2" style="font-size: 12px;">
+                            <strong>Auto:</strong> ON jika Cahaya < 1200 Lux<br>
+                            OFF jika Cahaya > 1500 Lux
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts -->
+        <div class="row">
+            <div class="col-md-4 mb-4">
+                <div class="card-custom">
+                    <h5 class="mb-3">
+                        <i class="fas fa-chart-line me-2"></i>Grafik Suhu
+                    </h5>
+                    <canvas id="tempChart"></canvas>
+                </div>
+            </div>
+            
+            <div class="col-md-4 mb-4">
+                <div class="card-custom">
+                    <h5 class="mb-3">
+                        <i class="fas fa-chart-line me-2"></i>Grafik Kelembaban
+                    </h5>
+                    <canvas id="humidityChart"></canvas>
+                </div>
+            </div>
+
+            <div class="col-md-4 mb-4">
+                <div class="card-custom">
+                    <h5 class="mb-3">
+                        <i class="fas fa-chart-line me-2"></i>Grafik Cahaya
+                    </h5>
+                    <canvas id="lightChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Data Table -->
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card-custom">
+                    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap">
+                        <h5 class="mb-0">
+                            <i class="fas fa-table me-2"></i>Data History & Monitoring
+                        </h5>
+                        <button class="btn btn-export" onclick="exportToExcel()">
+                            <i class="fas fa-file-excel me-2"></i>Export to Excel
+                        </button>
+                    </div>
+                    
+                    <!-- Date Filter -->
+                    <div class="row mb-3">
+                        <div class="col-md-5">
+                            <label class="form-label">Dari Tanggal:</label>
+                            <input type="date" class="form-control" id="startDate" onchange="updateTable()">
+                        </div>
+                        <div class="col-md-5">
+                            <label class="form-label">Sampai Tanggal:</label>
+                            <input type="date" class="form-control" id="endDate" onchange="updateTable()">
+                        </div>
+                        <div class="col-md-2 d-flex align-items-end">
+                            <button class="btn btn-secondary w-100" onclick="resetFilter()">
+                                <i class="fas fa-redo me-2"></i>Reset
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Table -->
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>No</th>
+                                    <th>Waktu</th>
+                                    <th>Suhu (°C)</th>
+                                    <th>Kelembaban (%)</th>
+                                    <th>Cahaya (Lux)</th>
+                                    <th>Pompa</th>
+                                    <th>Misting</th>
+                                    <th>Shading</th>
+                                    <th>Mode</th>
+                                </tr>
+                            </thead>
+                            <tbody id="dataTable">
+                                <tr>
+                                    <td colspan="9" class="text-center">
+                                        <div class="spinner-border text-primary" role="status">
+                                            <span class="visually-hidden">Loading...</span>
+                                        </div>
+                                        <p class="mt-2">Memuat data dari Firebase...</p>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="mt-3 text-muted">
+                        <small><i class="fas fa-info-circle me-2"></i>Menampilkan maksimal 50 data terakhir</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+    <!-- SheetJS for Excel Export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+
+    <script src="js/firebase-config.js"></script>
+    <script src="js/dashboard-advanced.js"></script>
+
+    <!-- Logout Function -->
+    <script>
+    function logout() {
+        if (confirm('Apakah Anda yakin ingin logout?')) {
+            firebase.auth().signOut()
+                .then(() => {
+                    sessionStorage.clear();
+                    localStorage.clear();
+                    alert("Logout berhasil!");
+                    window.location.replace("index.html");
+                })
+                .catch((error) => {
+                    console.error("Logout gagal:", error);
+                    alert("Terjadi kesalahan saat logout.");
+                });
+        }
+    }
+    </script>
+</body>
+</html>
